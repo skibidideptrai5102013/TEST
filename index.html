@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Hỗ Trợ Học Tập</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            padding: 20px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .api-config {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f0f4ff;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            min-height: 100px;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .note {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #6c757d;
+            line-height: 1.5;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📖 Hỗ Trợ Học Tập Thông Minh</h1>
+            <p>Kết nối API để nhận giải thích, tóm tắt, trả lời câu hỏi và nhiều chức năng khác</p>
+        </header>
+
+        <!-- Cấu hình API -->
+        <div class="card api-config">
+            <h2>🔑 Cấu Hình Khóa API</h2>
+            <p class="note">Nhập khóa API của bạn bên dưới. Hỗ trợ các dịch vụ như Gemini, OpenAI, DeepSeek...</p>
+            
+            <div class="form-group">
+                <label for="api-provider">Chọn Nhà Cung Cấp API</label>
+                <select id="api-provider" onchange="updateApiHint()">
+                    <option value="gemini">Google Gemini (Khuyến nghị - có lớp miễn phí)</option>
+                    <option value="openai">OpenAI (ChatGPT)</option>
+                    <option value="custom">API Tùy Chỉnh</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="api-key">Khóa API Key</label>
+                <input type="password" id="api-key" placeholder="Nhập khóa API của bạn...">
+                <button type="button" class="btn-secondary" style="padding: 8px 15px; margin-top: 8px; font-size: 0.9rem;" onclick="toggleKeyVisibility()">
+                    Hiển thị/Mã hóa
+                </button>
+            </div>
+
+            <div class="form-group" id="api-endpoint-group" style="display: none;">
+                <label for="api-endpoint">Địa chỉ API Endpoint</label>
+                <input type="text" id="api-endpoint" placeholder="https://.../v1/chat/completions">
+            </div>
+
+            <button onclick="saveApiConfig()">💾 Lưu Cấu Hình</button>
+            <div id="config-status" class="status hidden"></div>
+
+            <div style="margin-top: 20px; padding: 15px; background: #e7f3ff; border-radius: 8px;">
+                <h3>📝 Cách lấy khóa API miễn phí (Gemini):</h3>
+                <p class="note" style="margin-top: 8px;">
+                    1. Truy cập <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: #667eea;">Google AI Studio</a><br>
+                    2. Đăng nhập bằng tài khoản Google<br>
+                    3. Nhấn "Create API Key" → Tạo khóa mới<br>
+                    4. Sao chép khóa và dán vào ô trên<br>
+                    ⚠️ Không chia sẻ khóa API cho người khác!
+                </p>
+            </div>
+        </div>
+
+        <!-- Khu vực sử dụng -->
+        <div class="card">
+            <div class="tabs">
+                <div class="tab active" data-tab="explain">Giải thích bài học</div>
+                <div class="tab" data-tab="summary">Tóm tắt nội dung</div>
+                <div class="tab" data-tab="qa">Hỏi & Đáp</div>
+                <div class="tab" data-tab="translate">Dịch thuật</div>
+            </div>
+
+            <!-- Tab Giải thích -->
+            <div class="tab-content active" id="explain">
+                <h3>Giải thích rõ ràng khái niệm / bài tập</h3>
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>Nội dung cần giải thích:</label>
+                    <textarea id="explain-input" rows="5" placeholder="Ví dụ: Giải thích tại sao bầu trời có màu xanh? Hoặc giải bài toán: 2x + 5 = 15..."></textarea>
+                </div>
+                <button onclick="processExplain()">🚀 Giải thích ngay</button>
+                <div id="explain-result" class="result-box hidden"></div>
+            </div>
+
+            <!-- Tab Tóm tắt -->
+            <div class="tab-content" id="summary">
+                <h3>Tóm tắt nội dung dài</h3>
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>Nội dung cần tóm tắt:</label>
+                    <textarea id="summary-input" rows="8" placeholder="Dán đoạn văn bản, bài học cần tóm tắt ngắn gọn..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Độ dài tóm tắt:</label>
+                    <select id="summary-length">
+                        <option value="ngắn gọn nhất">Ngắn gọn nhất</option>
+                        <option value="trung bình" selected>Trung bình</option>
+                        <option value="chi tiết">Chi tiết</option>
+                    </select>
+                </div>
+                <button onclick="processSummary()">🚀 Tóm tắt ngay</button>
+                <div id="summary-result" class="result-box hidden"></div>
+            </div>
+
+            <!-- Tab Hỏi Đáp -->
+            <div class="tab-content" id="qa">
+                <h3>Đặt câu hỏi về bài học</h3>
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>Câu hỏi của bạn:</label>
+                    <textarea id="qa-input" rows="4" placeholder="Ví dụ: Làm sao để học tốt ngữ pháp tiếng Anh? Giải thích định luật II Newton..."></textarea>
+                </div>
+                <button onclick="processQA()">🚀 Trả lời</button>
+                <div id="qa-result" class="result-box hidden"></div>
+            </div>
+
+            <!-- Tab Dịch -->
+            <div class="tab-content" id="translate">
+                <h3>Dịch thuật nội dung học tập</h3>
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>Nội dung cần dịch:</label>
+                    <textarea id="translate-input" rows="5" placeholder="Nhập nội dung..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Đích ngôn ngữ:</label>
+                    <select id="target-lang">
+                        <option value="Tiếng Việt" selected>Tiếng Việt</option>
+                        <option value="Tiếng Anh">Tiếng Anh</option>
+                        <option value="Tiếng Trung">Tiếng Trung</option>
+                        <option value="Tiếng Nhật">Tiếng Nhật</option>
+                        <option value="Tiếng Hàn">Tiếng Hàn</option>
+                        <option value="Tiếng Pháp">Tiếng Pháp</option>
+                    </select>
+                </div>
+                <button onclick="processTranslate()">🚀 Dịch ngay</button>
+                <div id="translate-result" class="result-box hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Quản lý trạng thái & cấu hình
+        let config = {
+            provider: localStorage.getItem('api_provider') || 'gemini',
+            apiKey: localStorage.getItem('api_key') || '',
+            endpoint: localStorage.getItem('api_endpoint') || ''
+        };
+
+        // Khởi tạo giao diện
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('api-provider').value = config.provider;
+            document.getElementById('api-key').value = config.apiKey;
+            document.getElementById('api-endpoint').value = config.endpoint;
+            updateApiHint();
+        });
+
+        // Chuyển tab
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        function updateApiHint() {
+            const provider = document.getElementById('api-provider').value;
+            document.getElementById('api-endpoint-group').style.display = 
+                provider === 'custom' ? 'block' : 'none';
+        }
+
+        function toggleKeyVisibility() {
+            const input = document.getElementById('api-key');
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        function saveApiConfig() {
+            config.provider = document.getElementById('api-provider').value;
+            config.apiKey = document.getElementById('api-key').value.trim();
+            config.endpoint = document.getElementById('api-endpoint').value.trim();
+
+            if (!config.apiKey) {
+                showStatus('config-status', 'Vui lòng nhập khóa API!', false);
+                return;
+            }
+
+            localStorage.setItem('api_provider', config.provider);
+            localStorage.setItem('api_key', config.apiKey);
+            localStorage.setItem('api_endpoint', config.endpoint);
+            
+            showStatus('config-status', '✅ Cấu hình đã được lưu thành công!', true);
+        }
+
+        function showStatus(elementId, message, isSuccess) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.className = `status ${isSuccess ? 'success' : 'error'}`;
+            el.classList.remove('hidden');
+            
+            setTimeout(() => el.classList.add('hidden'), 5000);
+        }
+
+        // Gọi API chính
+        async function callAI(prompt) {
+            if (!config.apiKey) {
+                return { error: 'Vui lòng nhập và lưu khóa API trước khi sử dụng!' };
+            }
+
+            try {
+                let response;
+                let data;
+
+                if (config.provider === 'gemini') {
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${config.apiKey}`;
+                    
+                    response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: prompt }] }]
+                        })
+                    });
+
+                    data = await response.json();
+                    
+                    if (data.candidates && data.candidates[0].content) {
+                        return { result: data.candidates[0].content.parts[0].text };
+                    } else {
+                        return { error: data.error?.message || 'Không nhận được phản hồi từ API' };
+                    }
+                } 
+                else if (config.provider === 'openai' || config.provider === 'custom') {
+                    const endpoint = config.provider === 'openai' 
+                        ? 'https://api.openai.com/v1/chat/completions' 
+                        : config.endpoint;
+
+                    response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${config.apiKey}`
+                        },
+                        body: JSON.stringify({
+                            model: config.provider === 'openai' ? 'gpt-3.5-turbo' : 'gpt-3.5-turbo',
+                            messages: [
+                                { role: 'system', content: 'Bạn là trợ lý giáo dục hữu ích, trả lời rõ ràng, dễ hiểu, phù hợp với người học tại Việt Nam.' },
+                                { role: 'user', content: prompt }
+                            ]
+                        })
+                    });
+
+                    data = await response.json();
+                    
+                    if (data.choices && data.choices[0]) {
+                        return { result: data.choices[0].message.content };
+                    } else {
+                        return { error: data.error?.message || 'Không nhận được phản hồi từ API' };
+                    }
+                }
+            } catch (err) {
+                return { error: `Lỗi kết nối: ${err.message}` };
+            }
+        }
+
+        // Các chức năng xử lý
+        async function processExplain() {
+            const input = document.getElementById('explain-input').value.trim();
+            if (!input) return alert('Vui lòng nhập nội dung cần giải thích!');
+            
+            const resultBox = document.getElementById('explain-result');
+            resultBox.textContent = '⏳ Đang xử lý...';
+            resultBox.classList.remove('hidden');
+
+            const res = await callAI(`Hãy giải thích chi tiết, dễ hiểu nội dung sau: ${input}`);
+            
+            resultBox.textContent = res.error || res.result;
+            if (res.error) resultBox.style.borderColor = '#dc3545';
+            else resultBox.style.borderColor = '#28a745';
+        }
+
+        async function processSummary() {
+            const input = document.getElementById('summary-input').value.trim();
+            const length = document.getElementById('summary-length').value;
+            if (!input) return alert('Vui lòng nhập nội dung cần tóm tắt!');
+            
+            const resultBox = document.getElementById('summary-result');
+            resultBox.textContent = '⏳ Đang tóm tắt...';
+            resultBox.classList.remove('hidden');
+
+            const res = await callAI(`Tóm tắt nội dung sau một cách ${length}, giữ ý chính: ${input}`);
+            
+            resultBox.textContent = res.error || res.result;
+        }
+
+        async function processQA() {
+            const question = document.getElementById('qa-input').value.trim();
+            if (!question) return alert('Vui lòng nhập câu hỏi!');
+            
+            const resultBox = document.getElementById('qa-result');
+            resultBox.textContent = '⏳ Đang tìm câu trả lời...';
+            resultBox.classList.remove('hidden');
+
+            const res = await callAI(`Câu hỏi học tập: ${question}. Trả lời chi tiết, dễ hiểu.`);
+            
+            resultBox.textContent = res.error || res.result;
+        }
+
+        async function processTranslate() {
+            const input = document.getElementById('translate-input').value.trim();
+            const target = document.getElementById('target-lang').value;
+            if (!input) return alert('Vui lòng nhập nội dung cần dịch!');
+            
+            const resultBox = document.getElementById('translate-result');
+            resultBox.textContent = '⏳ Đang dịch...';
+            resultBox.classList.remove('hidden');
+
+            const res = await callAI(`Dịch nội dung sau sang ${target}: ${input}`);
+            
+            resultBox.textContent = res.error || res.result;
+        }
+    </script>
+</body>
+</html>
